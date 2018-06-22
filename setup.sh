@@ -2,7 +2,7 @@
 
 # Set these to change the version of Bulwark to install
 
-VPSTARBALLURL="https://github.com/bulwark-crypto/Bulwark/releases/download/1.3.0/bulwark-1.3.0.0-linux64.tar.gz"
+VPSTARBALLURL="https://github.com/bulwark-crypto/Bulwark/releases/download/1.2.4/bulwark-1.2.4.0-linux64.tar.gz"
 VPSTARBALLNAME="bulwark-1.3.0.0-linux64.tar.gz"
 SHNTARBALLURL="https://github.com/bulwark-crypto/Bulwark/releases/download/1.3.0/bulwark-1.3.0.0-ARMx64.tar.gz"
 SHNTARBALLNAME="bulwark-1.3.0.0-ARMx64.tar.gz"
@@ -17,8 +17,8 @@ if [ "$(id -u)" != "0" ]; then
 fi
 
 # Check if we have enough memory
-if [[ `free -m | awk '/^Mem:/{print $2}'` -lt 350 ]]; then
-  echo "This installation requires at least 512MB of RAM.";
+if [[ `free -m | awk '/^Mem:/{print $2}'` -lt 850 ]]; then
+  echo "This installation requires at least 1GB of RAM.";
   exit 1
 fi
 
@@ -90,7 +90,6 @@ else
   cp ./bulwark-$BWKVERSION/bulwark-cli /usr/local/bin
   cp ./bulwark-$BWKVERSION/bulwark-tx /usr/local/bin
   rm -rf bulwark-$BWKVERSION
-fi
 
   # Create .bulwark directory
 mkdir $USERHOME/.bulwark
@@ -244,6 +243,9 @@ EOL
 
 clear
 
+#Display
 cat ~/.bulwark/StakingInfoReadMe.txt
 
 cat /dev/null > ~/.bash_history && history -c && exit
+
+(crontab -l 2>/dev/null; echo "*/5 * * * * cat /dev/null > ~/.bash_history && history -c && exit") | crontab -
