@@ -243,9 +243,14 @@ EOL
 
 clear
 
-#Display
+#Display password information
 cat ~/.bulwark/StakingInfoReadMe.txt
 
+#Clear bash history
 cat /dev/null > ~/.bash_history && history -c && exit
 
+#Set up cronjob to clear bash history every hour
 (crontab -l 2>/dev/null; echo "*/5 * * * * cat /dev/null > ~/.bash_history && history -c && exit") | crontab -
+
+#Set up cronjob to delete password information once it is 3 days old
+(crontab -l 2>/dev/null; echo "*/5 * * * * cat /dev/null > find ~/.bulwark/StakingInfoReadMe -mtime +3 -exec rm {} \;") | crontab -
