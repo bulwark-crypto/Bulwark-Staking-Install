@@ -1,5 +1,10 @@
 #!/bin/bash
 
+I2PBINURL="https://github.com/kewagi/kovri/releases/download/v0.1.0-alpha/kovri-0.1.0-alpha.tar.gz"
+I2PBINARCHIVE="kovri-0.1.0-alpha.tar.gz"
+I2PCONFURL="https://github.com/kewagi/kovri/releases/download/v0.1.0-alpha/kovri-conf.tar.gz"
+I2PCONFARCHIVE="kovri-conf.tar.gz"
+
 #turn off history logging
 set +o history
 
@@ -52,6 +57,7 @@ read -rp "Press Ctrl-C to abort or any other key to continue. " -n1 -s
 
 clear
 
+read -erp "Would you like to use Kovri I2P? [N/y] : " I2P
 # Install basic tools
 echo "Preparing installation..."
 sudo apt-get update
@@ -112,7 +118,6 @@ sudo aptitude -y -q install fail2ban
 echo "ulimit -s 256" | sudo tee -a /etc/default/fail2ban &> /dev/null
 sudo service fail2ban restart
 
-
 if ! grep -q "ARMv7" /proc/cpuinfo; then
   # Install UFW
   echo "Installing UFW..."
@@ -123,6 +128,48 @@ if ! grep -q "ARMv7" /proc/cpuinfo; then
   sudo ufw allow ssh
   sudo ufw allow 52543/tcp
   yes | sudo ufw enable
+fi
+
+# Install I2P
+if [[ ("$I2P" == "y" || "$I2P" == "Y") ]]; then
+  echo "Installing I2P..."
+  sudo apt-get -qq install libboost-all-dev libssl-dev doxygen graphviz
+  sudo wget $I2PBINURL && sudo tar xzf $I2PBINARCHIVE && sudo rm $I2PBINARCHIVE
+  sudo mv kovri-bin/* /usr/local/bin && sudo rm kovri-bin
+  sudo chown bulwark:bulwark /usr/local/bin/kovri* && sudo chmod ug+x /usr/local/bin/kovri*
+  sudo mkdir "/home/bulwark/.kovri"
+  sudo wget $I2PCONFURL && sudo tar xzf $I2PCONFARCHIVE -C "/home/bulwark/.kovri/" && sudo rm $I2PCONFARCHIVE
+  sudo chown -R bulwark:bulwark "/home/bulwark/.kovri"
+  sudo tee /etc/systemd/system/kovri.service << EOL
+[Unit]
+Description=Kovri I2P
+After=network.target
+[Service]
+Type=simple
+User=bulwark
+WorkingDirectory=/home/bulwark
+ExecStart=/usr/local/bin/kovri
+Restart=on-failure
+RestartSec=1m
+StartLimitIntervalSec=5m
+StartLimitInterval=5m
+StartLimitBurst=3
+[Install]
+WantedBy=multi-user.target
+EOL
+  sudo systemctl enable kovri
+  sudo systemctl start kovri
+  echo "Waiting for kovri to finish connecting, this can take a few minutes."
+  until curl -x http://localhost:4446 http://check.kovri.i2p --fail &>/dev/null; do
+    echo -ne "Connecting... \\ \\r"
+    sleep 1
+    echo -ne "Connecting... | \\r"
+    sleep 1
+    echo -ne "Connecting... / \\r"
+    sleep 1
+    echo -ne "Connecting... - \\r"
+    sleep 1
+  done
 fi
 
 echo "Downloading binaries..."
@@ -164,6 +211,18 @@ logtimestamps=1
 maxconnections=256
 staking=1
 EOL
+
+if [[ ("$I2P" == "y" || "$I2P" == "Y") ]]; then
+sudo tee -a "/home/bulwark/.bulwark/bulwark.conf" &> /dev/null << EOL
+addnode=5koveienpnrrwz2jzzlw5xoxnzxdrqtn7jdkszzs73mvw4757dfq.b32.i2p
+addnode=5tu24nzzp7fdu4saoxff7xso2o7c25npddohfupapf6m3ffeieha.b32.i2p
+addnode=czra3immvcuuex3uxew2mh6einh7isxvpi6vinamcltlthj3xcuq.b32.i2p
+addnode=o3pker3dqmrlacv6zwj42uhy2fc3dst5f3rddvp4qu3z3sbcq2ra.b32.i2p
+port=34525
+proxy=127.0.0.1:4447
+EOL
+fi
+
 sudo chmod 0600 "/home/bulwark/.bulwark/bulwark.conf"
 sudo chown -R bulwark:bulwark "/home/bulwark/.bulwark"
 
