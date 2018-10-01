@@ -26,11 +26,11 @@ sudo apt-get install -y curl
 
 # Set the correct download path
 
-VPSTARBALLURL=$(curl -s https://api.github.com/repos/bulwark-crypto/bulwark/releases/latest | grep browser_download_url | grep linux64 | cut -d '"' -f 4)
-VPSTARBALLNAME=$(curl -s https://api.github.com/repos/bulwark-crypto/bulwark/releases/latest | grep browser_download_url | grep linux64 | cut -d '"' -f 4 | cut -d "/" -f 9)
-SHNTARBALLURL=$(curl -s https://api.github.com/repos/bulwark-crypto/bulwark/releases/latest | grep browser_download_url | grep ARM | cut -d '"' -f 4)
-SHNTARBALLNAME=$(curl -s https://api.github.com/repos/bulwark-crypto/bulwark/releases/latest | grep browser_download_url | grep ARM | cut -d '"' -f 4 | cut -d "/" -f 9)
-BWKVERSION=$(curl -s https://api.github.com/repos/bulwark-crypto/bulwark/releases/latest | grep browser_download_url | grep ARM | cut -d '"' -f 4 | cut -d "/" -f 8)
+VPSTARBALLURL=$(curl -s https://api.github.com/repos/bulwark-crypto/bulwark/releases/latest | grep browser_download_url | grep bulwark-node | grep linux64 | cut -d '"' -f 4)
+VPSTARBALLNAME=$(curl -s https://api.github.com/repos/bulwark-crypto/bulwark/releases/latest | grep browser_download_url | grep bulwark-node | grep linux64 | cut -d '"' -f 4 | cut -d "/" -f 9)
+SHNTARBALLURL=$(curl -s https://api.github.com/repos/bulwark-crypto/bulwark/releases/latest | grep browser_download_url | grep bulwark-node | grep ARM | cut -d '"' -f 4)
+SHNTARBALLNAME=$(curl -s https://api.github.com/repos/bulwark-crypto/bulwark/releases/latest | grep browser_download_url | grep bulwark-node | grep ARM | cut -d '"' -f 4 | cut -d "/" -f 9)
+BWKVERSION=$(curl -s https://api.github.com/repos/bulwark-crypto/bulwark/releases/latest | grep browser_download_url | grep bulwark-node | grep ARM | cut -d '"' -f 4 | cut -d "/" -f 8)
 BOOTSTRAPURL=$(curl -s https://api.github.com/repos/bulwark-crypto/bulwark/releases/latest | grep bootstrap.dat.xz | grep browser_download_url | cut -d '"' -f 4)
 BOOTSTRAPARCHIVE="bootstrap.dat.xz"
 
@@ -57,7 +57,9 @@ read -rp "Press Ctrl-C to abort or any other key to continue. " -n1 -s
 
 clear
 
-read -erp "Would you like to use Kovri I2P? [N/y] : " I2P
+#read -erp "Would you like to use Kovri I2P? [N/y] : " I2P
+I2P="n"
+
 # Install basic tools
 echo "Preparing installation..."
 sudo apt-get update
