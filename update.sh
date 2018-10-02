@@ -26,24 +26,17 @@ else
   su -c "bulwark-cli stop" "bulwark"
 fi
 
+echo "Downloading and installing binaries..."
 if grep -q "ARMv7" /proc/cpuinfo; then
   # Install Bulwark daemon for ARMv7 systems
   wget "$SHNTARBALLURL"
-  tar -xzvf "$SHNTARBALLNAME" && mv bin "bulwark-$BWKVERSION"
-  rm" $SHNTARBALLNAME"
-  cp "./bulwark-$BWKVERSION/bulwarkd" /usr/local/bin
-  cp "./bulwark-$BWKVERSION/bulwark-cli" /usr/local/bin
-  cp "./bulwark-$BWKVERSION/bulwark-tx" /usr/local/bin
-  rm -rf "bulwark-$BWKVERSION"
+  sudo tar -xzvf "$SHNTARBALLNAME" -C /usr/local/bin
+  rm "$SHNTARBALLNAME"
 else
   # Install Bulwark daemon for x86 systems
   wget "$VPSTARBALLURL"
-  tar -xzvf "$VPSTARBALLNAME" && mv bin "bulwark-$BWKVERSION"
+  sudo tar -xzvf "$VPSTARBALLNAME" -C /usr/local/bin
   rm "$VPSTARBALLNAME"
-  cp "./bulwark-$BWKVERSION/bulwarkd" /usr/local/bin
-  cp "./bulwark-$BWKVERSION/bulwark-cli" /usr/local/bin
-  cp "./bulwark-$BWKVERSION/bulwark-tx" /usr/local/bin
-  rm -rf "bulwark-$BWKVERSION"
 fi
 
 if [ -e /usr/bin/bulwarkd ];then rm -rf /usr/bin/bulwarkd; fi
