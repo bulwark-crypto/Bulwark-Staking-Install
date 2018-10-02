@@ -174,24 +174,20 @@ EOL
   done
 fi
 
-echo "Downloading binaries..."
+echo "Downloading and installing binaries..."
 if grep -q "ARMv7" /proc/cpuinfo; then
   # Install Bulwark daemon for ARMv7 systems
   wget "$SHNTARBALLURL"
-  tar -xzvf "$SHNTARBALLNAME" && mv bin "bulwark-$BWKVERSION"
+  sudo tar -xzvf "$SHNTARBALLNAME" -C /usr/local/bin
   rm "$SHNTARBALLNAME"
 else
   # Install Bulwark daemon for x86 systems
   wget "$VPSTARBALLURL"
-  tar -xzvf "$VPSTARBALLNAME" && mv bin "bulwark-$BWKVERSION"
+  sudo tar -xzvf "$VPSTARBALLNAME" -C /usr/local/bin
   rm "$VPSTARBALLNAME"
 fi
 
-echo "Installing binaries..."
-sudo mv "./bulwark-$BWKVERSION/bulwarkd" /usr/local/bin
-sudo mv "./bulwark-$BWKVERSION/bulwark-cli" /usr/local/bin
-sudo mv "./bulwark-$BWKVERSION/bulwark-tx" /usr/local/bin
-rm -rf "bulwark-$BWKVERSION"
+#echo "Installing binaries..."
 
 # Create .bulwark directory
 sudo mkdir "/home/bulwark/.bulwark"
