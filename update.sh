@@ -19,6 +19,10 @@ fi
 USER="bulwark"
 USERHOME="/home/bulwark"
 
+# Make sure jq is installed
+apt -qqy install jq
+clear
+
 echo "Shutting down wallet..."
 if [ -e /etc/systemd/system/bulwarkd.service ]; then
   systemctl stop bulwarkd
@@ -87,7 +91,7 @@ clear
 
 echo "Your wallet is syncing. Please wait for this process to finish."
 
-until su -c "bulwark-cli mnsync status 2>/dev/null | grep '\"IsBlockchainSynced\" : true' > /dev/null" "bulwark"; do
+until su -c "bulwark-cli mnsync status 2>/dev/null" bulwark | jq '.IsBlockchainSynced' | grep -q true; do
   for (( i=0; i<${#CHARS}; i++ )); do
     sleep 2
     echo -en "${CHARS:$i:1}" "\\r"
