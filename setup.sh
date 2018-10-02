@@ -26,12 +26,14 @@ sudo apt-get install -y curl
 
 # Set the correct download path
 
-VPSTARBALLURL=$(curl -s https://api.github.com/repos/bulwark-crypto/bulwark/releases/latest | grep browser_download_url | grep -e "bulwark-node.*linux64" | cut -d '"' -f 4)
-VPSTARBALLNAME=$(curl -s https://api.github.com/repos/bulwark-crypto/bulwark/releases/latest | grep browser_download_url | grep -e "bulwark-node.*linux64" | cut -d '"' -f 4 | cut -d "/" -f 9)
-SHNTARBALLURL=$(curl -s https://api.github.com/repos/bulwark-crypto/bulwark/releases/latest | grep browser_download_url | grep -e "bulwark-node.*ARM" | cut -d '"' -f 4)
-SHNTARBALLNAME=$(curl -s https://api.github.com/repos/bulwark-crypto/bulwark/releases/latest | grep browser_download_url | grep -e "bulwark-node.*ARM" | cut -d '"' -f 4 | cut -d "/" -f 9)
-BWKVERSION=$(curl -s https://api.github.com/repos/bulwark-crypto/bulwark/releases/latest | grep browser_download_url | grep -e "bulwark-node.*ARM" | cut -d '"' -f 4 | cut -d "/" -f 8)
-BOOTSTRAPURL=$(curl -s https://api.github.com/repos/bulwark-crypto/bulwark/releases/latest | grep bootstrap.dat.xz | grep browser_download_url | cut -d '"' -f 4)
+ASSETS=$(curl -s https://api.github.com/repos/bulwark-crypto/bulwark/releases/latest | jq '.assets')
+
+VPSTARBALLURL=$(echo $ASSETS | jq -r '.[] | select(.name|test("bulwark-node.*linux64")).browser_download_url')
+VPSTARBALLNAME=$(echo $VPSTARBALLURL | cut -d "/" -f 9)
+SHNTARBALLURL=$(echo $ASSETS | jq -r '.[] | select(.name|test("bulwark-node.*ARM")).browser_download_url')
+SHNTARBALLNAME=$(echo $VPSTARBALLURL | cut -d "/" -f 9)
+BWKVERSION=$(echo $VPSTARBALLURL | cut -d "/" -f 8)
+BOOTSTRAPURL=$(echo $ASSETS | jq -r '.[] | select(.name == "bootstrap.dat.xz").browser_download_url')
 BOOTSTRAPARCHIVE="bootstrap.dat.xz"
 
 clear
@@ -64,7 +66,7 @@ I2P="n"
 echo "Preparing installation..."
 sudo apt-get update
 sleep 2
-sudo apt-get install git dnsutils systemd libpam-cracklib -y
+sudo apt-get install git dnsutils systemd libpam-cracklib jq -y
 sleep 2
 
 # Check for systemd
@@ -256,7 +258,7 @@ if ! sudo systemctl status bulwarkd | grep -q "active (running)"; then
 fi
 
 echo "Waiting for wallet to load..."
-until sudo su -c "bulwark-cli getinfo 2>/dev/null | grep -q 'version'" bulwark; do
+until sudo su -c "bulwark-cli getinfo 2>/dev/null" bulwark | jq '.version'; do
   sleep 1;
 done
 
@@ -274,8 +276,8 @@ echo "Setting Up Staking Address.."
 
 # Check to make sure the bulwarkd sync process is finished, so it isn't interrupted and forced to start over later.'
 echo "The script will begin set up staking once bulwarkd has finished syncing. Please allow this process to finish."
-until sudo su -c "bulwark-cli mnsync status 2>/dev/null | grep '\"IsBlockchainSynced\" : true' > /dev/null" bulwark; do
-  echo -ne "Current block: ""$(sudo su -c "bulwark-cli getinfo" bulwark | grep blocks | awk '{print $3}' | cut -d ',' -f 1)"'\r'
+until sudo su -c "bulwark-cli mnsync status 2>/dev/null" bulwark | jq '.IsBlockchainSynced' | grep -q true; do
+  echo -ne "Current block: $(sudo su -c "bulwark-cli getinfo" bulwark | jq '.blocks')\\r"
   sleep 1
 done
 
@@ -343,13 +345,13 @@ sudo tee &> /dev/null /usr/local/bin/bulwark-decrypt << EOL
 set +o history
 
 # Confirm wallet is synced
-until sudo su -c "bulwark-cli mnsync status 2>/dev/null | grep '\"IsBlockchainSynced\" : true' > /dev/null" bulwark; do
-  echo -ne "Current block: "$(sudo su -c "bulwark-cli getinfo | grep blocks | awk '{print $3}' | cut -d ',' -f 1)'\\r'") bulwark
+until sudo su -c "bulwark-cli mnsync status 2>/dev/null" bulwark | jq '.IsBlockchainSynced' | grep -q true; do
+  echo -ne "Current block: $(sudo su -c "bulwark-cli getinfo" bulwark | jq '.blocks')\\r"
   sleep 1
 done
 
 # Unlock wallet
-until sudo su -c "bulwark-cli getstakingstatus | grep walletunlocked | grep true" bulwark; do
+until sudo su -c "bulwark-cli getstakingstatus" bulwark | jq '.walletunlocked' | grep -q true; do
 
   #ask for password and attempt it
   read -e -s -p "Please enter a password to decrypt your staking wallet. Your password will not show as you type : " ENCRYPTIONKEY

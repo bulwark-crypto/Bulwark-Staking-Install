@@ -3,8 +3,8 @@
 BOOTSTRAPURL=$(curl -s https://api.github.com/repos/bulwark-crypto/bulwark/releases/latest | grep bootstrap.dat.xz | grep browser_download_url | cut -d '"' -f 4)
 BOOTSTRAPARCHIVE="bootstrap.dat.xz"
 
-# Make sure curl is installed
-apt -qqy install curl
+# Make sure curl and jq are installed
+apt -qqy install curl jq
 clear
 
 clear
@@ -30,7 +30,7 @@ sudo cp "$USERHOME/.bulwark/bulwark.conf" "$USERHOME/.bulwark/bulwark.conf.backu
 sudo sed -i '/^addnode/d' "$USERHOME/.bulwark/bulwark.conf"
 
 echo "Installing bootstrap file..."
-wget "$BOOTSTRAPURL" && sudo xz -cd $BOOTSTRAPARCHIVE && sudo mv "./bootstrap.dat"  "$USERHOME/.bulwark/bootstrap.dat" && rm $BOOTSTRAPARCHIVE
+wget "$BOOTSTRAPURL" && sudo xz -d $BOOTSTRAPARCHIVE && sudo mv "./bootstrap.dat"  "$USERHOME/.bulwark/bootstrap.dat" && rm $BOOTSTRAPARCHIVE
 
 sudo systemctl start bulwarkd
 
@@ -43,7 +43,7 @@ until [ -n "$(bulwark-cli getconnectioncount 2>/dev/null)"  ]; do
   sleep 1
 done
 
-until su -c "bulwark-cli mnsync status 2>/dev/null | grep '\"IsBlockchainSynced\" : true' > /dev/null" "$USER"; do
+until su -c "bulwark-cli mnsync status 2>/dev/null" "$USER" | jq '.IsBlockchainSynced' | grep -q true; do
   echo -ne "Current block: ""$(sudo su -c "bulwark-cli getinfo" "$USER" | grep blocks | awk '{print $3}' | cut -d ',' -f 1)"'\r'
   sleep 1
 done
