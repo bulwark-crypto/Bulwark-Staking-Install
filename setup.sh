@@ -274,7 +274,7 @@ echo "Setting Up Staking Address.."
 
 # Check to make sure the bulwarkd sync process is finished, so it isn't interrupted and forced to start over later.'
 echo "The script will begin set up staking once bulwarkd has finished syncing. Please allow this process to finish."
-until sudo su -c "bulwark-cli mnsync status 2>/dev/null | grep '\"IsBlockchainSynced\" : true' > /dev/null" bulwark; do
+until sudo su -c "bulwark-cli mnsync status 2>/dev/null | grep '\"IsBlockchainSynced\": true' > /dev/null" bulwark; do
   echo -ne "Current block: ""$(sudo su -c "bulwark-cli getinfo" bulwark | grep blocks | awk '{print $3}' | cut -d ',' -f 1)"'\r'
   sleep 1
 done
