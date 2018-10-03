@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Install curl before we do anything else
+echo "Installing curl and jq..."
+sudo apt-get install -y curl jq
+
 BOOTSTRAPURL=$(curl -s https://api.github.com/repos/bulwark-crypto/bulwark/releases/latest | grep bootstrap.dat.xz | grep browser_download_url | cut -d '"' -f 4)
 BOOTSTRAPARCHIVE="bootstrap.dat.xz"
 
