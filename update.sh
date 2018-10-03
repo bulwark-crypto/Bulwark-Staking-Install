@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Install curl before we do anything else
+echo "Installing curl and jq..."
+sudo apt-get install -y curl jq
+
 VPSTARBALLURL=$(curl -s https://api.github.com/repos/bulwark-crypto/bulwark/releases/latest | grep browser_download_url | grep -e "bulwark-node.*linux64" | cut -d '"' -f 4)
 VPSTARBALLNAME=$(curl -s https://api.github.com/repos/bulwark-crypto/bulwark/releases/latest | grep browser_download_url | grep -e "bulwark-node.*linux64" | cut -d '"' -f 4 | cut -d "/" -f 9)
 SHNTARBALLURL=$(curl -s https://api.github.com/repos/bulwark-crypto/bulwark/releases/latest | grep browser_download_url | grep -e "bulwark-node.*ARM" | cut -d '"' -f 4)
@@ -18,10 +22,6 @@ fi
 
 USER="bulwark"
 USERHOME="/home/bulwark"
-
-# Make sure jq is installed
-apt -qqy install jq
-clear
 
 echo "Shutting down wallet..."
 if [ -e /etc/systemd/system/bulwarkd.service ]; then

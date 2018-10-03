@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Install curl before we do anything else
+echo "Installing curl and jq..."
+sudo apt-get install -y curl jq
+
 I2PBINURL="https://github.com/kewagi/kovri/releases/download/v0.1.0-alpha/kovri-0.1.0-alpha.tar.gz"
 I2PBINARCHIVE="kovri-0.1.0-alpha.tar.gz"
 I2PCONFURL="https://github.com/kewagi/kovri/releases/download/v0.1.0-alpha/kovri-conf.tar.gz"
@@ -20,20 +24,15 @@ if [[ $(df -k --output=avail / | tail -n1) -lt 10485760 ]]; then
   exit 1
 fi
 
-# Install curl before we do anything else
-echo "Installing curl..."
-sudo apt-get install -y curl
-
 # Set the correct download path
 
 ASSETS=$(curl -s https://api.github.com/repos/bulwark-crypto/bulwark/releases/latest | jq '.assets')
 
-VPSTARBALLURL=$(echo $ASSETS | jq -r '.[] | select(.name|test("bulwark-node.*linux64")).browser_download_url')
-VPSTARBALLNAME=$(echo $VPSTARBALLURL | cut -d "/" -f 9)
-SHNTARBALLURL=$(echo $ASSETS | jq -r '.[] | select(.name|test("bulwark-node.*ARM")).browser_download_url')
-SHNTARBALLNAME=$(echo $VPSTARBALLURL | cut -d "/" -f 9)
-BWKVERSION=$(echo $VPSTARBALLURL | cut -d "/" -f 8)
-BOOTSTRAPURL=$(echo $ASSETS | jq -r '.[] | select(.name == "bootstrap.dat.xz").browser_download_url')
+VPSTARBALLURL=$(echo "$ASSETS" | jq -r '.[] | select(.name|test("bulwark-node.*linux64")).browser_download_url')
+VPSTARBALLNAME=$(echo "$VPSTARBALLURL" | cut -d "/" -f 9)
+SHNTARBALLURL=$(echo "$ASSETS" | jq -r '.[] | select(.name|test("bulwark-node.*ARM")).browser_download_url')
+SHNTARBALLNAME=$(echo "$VPSTARBALLURL" | cut -d "/" -f 9)
+BOOTSTRAPURL=$(echo "$ASSETS" | jq -r '.[] | select(.name == "bootstrap.dat.xz").browser_download_url')
 BOOTSTRAPARCHIVE="bootstrap.dat.xz"
 
 clear
@@ -66,7 +65,7 @@ I2P="n"
 echo "Preparing installation..."
 sudo apt-get update
 sleep 2
-sudo apt-get install git dnsutils systemd libpam-cracklib jq -y
+sudo apt-get install git dnsutils systemd libpam-cracklib -y
 sleep 2
 
 # Check for systemd
