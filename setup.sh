@@ -345,7 +345,7 @@ set +o history
 
 # Confirm wallet is synced
 until sudo su -c "bulwark-cli mnsync status 2>/dev/null" bulwark | jq '.IsBlockchainSynced' | grep -q true; do
-  echo -ne "Current block: $(sudo su -c "bulwark-cli getinfo" bulwark | jq '.blocks')\\r"
+  echo -ne "Current block: \$(sudo su -c "bulwark-cli getinfo" bulwark | jq '.blocks')\\r"
   sleep 1
 done
 
@@ -354,7 +354,7 @@ until sudo su -c "bulwark-cli getstakingstatus" bulwark | jq '.walletunlocked' |
 
   #ask for password and attempt it
   read -e -s -p "Please enter a password to decrypt your staking wallet. Your password will not show as you type : " ENCRYPTIONKEY
-  sudo su -c "bulwark-cli walletpassphrase '$ENCRYPTIONKEY' 0 true" bulwark
+  sudo su -c "bulwark-cli walletpassphrase '\$ENCRYPTIONKEY' 0 true" bulwark
 done
 
 # Tell user all was successful
