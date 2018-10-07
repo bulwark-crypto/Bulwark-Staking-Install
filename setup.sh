@@ -345,7 +345,7 @@ set +o history
 
 # Confirm wallet is synced
 until sudo su -c "bulwark-cli mnsync status 2>/dev/null" bulwark | jq '.IsBlockchainSynced' | grep -q true; do
-  echo -ne "Current block: $(sudo su -c "bulwark-cli getinfo" bulwark | jq '.blocks')\\r"
+  echo -ne "Current block: \$(sudo su -c "bulwark-cli getinfo" bulwark | jq '.blocks')\\r"
   sleep 1
 done
 
