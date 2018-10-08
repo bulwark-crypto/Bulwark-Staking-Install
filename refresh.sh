@@ -47,8 +47,8 @@ until [ -n "$(bulwark-cli getconnectioncount 2>/dev/null)"  ]; do
   sleep 1
 done
 
-until su -c "bulwark-cli mnsync status 2>/dev/null" "$USER" | jq '.IsBlockchainSynced' | grep -q true; do
-  echo -ne "Current block: ""$(sudo su -c "bulwark-cli getinfo" "$USER" | grep blocks | awk '{print $3}' | cut -d ',' -f 1)"'\r'
+until sudo su -c "bulwark-cli mnsync status 2>/dev/null" bulwark | jq '.IsBlockchainSynced' | grep -q true; do
+  echo -ne "Current block: $(sudo su -c "bulwark-cli getinfo" bulwark | jq '.blocks')\\r"
   sleep 1
 done
 
