@@ -4,11 +4,12 @@
 echo "Installing curl and jq..."
 sudo apt-get install -y curl jq
 
-VPSTARBALLURL=$(curl -s https://api.github.com/repos/bulwark-crypto/bulwark/releases/latest | grep browser_download_url | grep -e "bulwark-node.*linux64" | cut -d '"' -f 4)
-VPSTARBALLNAME=$(curl -s https://api.github.com/repos/bulwark-crypto/bulwark/releases/latest | grep browser_download_url | grep -e "bulwark-node.*linux64" | cut -d '"' -f 4 | cut -d "/" -f 9)
-SHNTARBALLURL=$(curl -s https://api.github.com/repos/bulwark-crypto/bulwark/releases/latest | grep browser_download_url | grep -e "bulwark-node.*ARM" | cut -d '"' -f 4)
-SHNTARBALLNAME=$(curl -s https://api.github.com/repos/bulwark-crypto/bulwark/releases/latest | grep browser_download_url | grep -e "bulwark-node.*ARM" | cut -d '"' -f 4 | cut -d "/" -f 9)
-BWKVERSION=$(curl -s https://api.github.com/repos/bulwark-crypto/bulwark/releases/latest | grep browser_download_url | grep -e "bulwark-node.*ARM" | cut -d '"' -f 4 | cut -d "/" -f 8)
+ASSETS=$(curl -s https://api.github.com/repos/bulwark-crypto/bulwark/releases/latest | jq '.assets')
+
+VPSTARBALLURL=$(echo "$ASSETS" | jq -r '.[] | select(.name|test("bulwark-node.*linux64")).browser_download_url')
+VPSTARBALLNAME=$(echo "$VPSTARBALLURL" | cut -d "/" -f 9)
+SHNTARBALLURL=$(echo "$ASSETS" | jq -r '.[] | select(.name|test("bulwark-node.*ARM")).browser_download_url')
+SHNTARBALLNAME=$(echo "$SHNTARBALLURL" | cut -d "/" -f 9)
 
 clear
 echo "This script will update your wallet to version $BWKVERSION"
@@ -56,6 +57,40 @@ if ! grep -q "ulimit -s 256" /etc/default/fail2ban; then
   systemctl restart fail2ban
 fi
 
+# Update bulwark-decrypt
+if [  -e /usr/local/bin/bulwark-decrypt ]; then sudo rm /usr/local/bin/bulwark-decrypt; fi
+
+sudo tee &> /dev/null /usr/local/bin/bulwark-decrypt << EOL
+#!/bin/bash
+
+# Stop writing to history
+set +o history
+
+# Confirm wallet is synced
+until sudo su -c "bulwark-cli mnsync status 2>/dev/null" bulwark | jq '.IsBlockchainSynced' | grep -q true; do
+  echo -ne "Current block: \$(sudo su -c "bulwark-cli getinfo" bulwark | jq '.blocks')\\r"
+  sleep 1
+done
+
+# Unlock wallet
+until sudo su -c "bulwark-cli getstakingstatus" bulwark | jq '.walletunlocked' | grep -q true; do
+
+  #ask for password and attempt it
+  read -e -s -p "Please enter a password to decrypt your staking wallet. Your password will not show as you type : " ENCRYPTIONKEY
+  sudo su -c "bulwark-cli walletpassphrase '\$ENCRYPTIONKEY' 0 true" bulwark
+done
+
+# Tell user all was successful
+echo "Wallet successfully unlocked!"
+echo " "
+sudo su -c "bulwark-cli getstakingstatus" bulwark
+
+# Restart history
+set -o history
+EOL
+
+sudo chmod a+x /usr/local/bin/bulwark-decrypt
+
 echo "Restarting Bulwark daemon..."
 if [ -e /etc/systemd/system/bulwarkd.service ]; then
   systemctl disable bulwarkd
@@ -91,11 +126,9 @@ clear
 
 echo "Your wallet is syncing. Please wait for this process to finish."
 
-until su -c "bulwark-cli mnsync status 2>/dev/null" bulwark | jq '.IsBlockchainSynced' | grep -q true; do
-  for (( i=0; i<${#CHARS}; i++ )); do
-    sleep 2
-    echo -en "${CHARS:$i:1}" "\\r"
-  done
+until sudo su -c "bulwark-cli mnsync status 2>/dev/null" bulwark | jq '.IsBlockchainSynced' | grep -q true; do
+  echo -ne "Current block: $(sudo su -c "bulwark-cli getinfo" bulwark | jq '.blocks')\\r"
+  sleep 1
 done
 
 clear
