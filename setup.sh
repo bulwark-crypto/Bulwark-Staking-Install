@@ -31,7 +31,7 @@ ASSETS=$(curl -s https://api.github.com/repos/bulwark-crypto/bulwark/releases/la
 VPSTARBALLURL=$(echo "$ASSETS" | jq -r '.[] | select(.name|test("bulwark-node.*linux64")).browser_download_url')
 VPSTARBALLNAME=$(echo "$VPSTARBALLURL" | cut -d "/" -f 9)
 SHNTARBALLURL=$(echo "$ASSETS" | jq -r '.[] | select(.name|test("bulwark-node.*ARM")).browser_download_url')
-SHNTARBALLNAME=$(echo "$VPSTARBALLURL" | cut -d "/" -f 9)
+SHNTARBALLNAME=$(echo "$SHNTARBALLURL" | cut -d "/" -f 9)
 BOOTSTRAPURL=$(echo "$ASSETS" | jq -r '.[] | select(.name == "bootstrap.dat.xz").browser_download_url')
 BOOTSTRAPARCHIVE="bootstrap.dat.xz"
 

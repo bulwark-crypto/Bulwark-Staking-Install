@@ -4,11 +4,12 @@
 echo "Installing curl and jq..."
 sudo apt-get install -y curl jq
 
-VPSTARBALLURL=$(curl -s https://api.github.com/repos/bulwark-crypto/bulwark/releases/latest | grep browser_download_url | grep -e "bulwark-node.*linux64" | cut -d '"' -f 4)
-VPSTARBALLNAME=$(curl -s https://api.github.com/repos/bulwark-crypto/bulwark/releases/latest | grep browser_download_url | grep -e "bulwark-node.*linux64" | cut -d '"' -f 4 | cut -d "/" -f 9)
-SHNTARBALLURL=$(curl -s https://api.github.com/repos/bulwark-crypto/bulwark/releases/latest | grep browser_download_url | grep -e "bulwark-node.*ARM" | cut -d '"' -f 4)
-SHNTARBALLNAME=$(curl -s https://api.github.com/repos/bulwark-crypto/bulwark/releases/latest | grep browser_download_url | grep -e "bulwark-node.*ARM" | cut -d '"' -f 4 | cut -d "/" -f 9)
-BWKVERSION=$(curl -s https://api.github.com/repos/bulwark-crypto/bulwark/releases/latest | grep browser_download_url | grep -e "bulwark-node.*ARM" | cut -d '"' -f 4 | cut -d "/" -f 8)
+ASSETS=$(curl -s https://api.github.com/repos/bulwark-crypto/bulwark/releases/latest | jq '.assets')
+
+VPSTARBALLURL=$(echo "$ASSETS" | jq -r '.[] | select(.name|test("bulwark-node.*linux64")).browser_download_url')
+VPSTARBALLNAME=$(echo "$VPSTARBALLURL" | cut -d "/" -f 9)
+SHNTARBALLURL=$(echo "$ASSETS" | jq -r '.[] | select(.name|test("bulwark-node.*ARM")).browser_download_url')
+SHNTARBALLNAME=$(echo "$SHNTARBALLURL" | cut -d "/" -f 9)
 
 clear
 echo "This script will update your wallet to version $BWKVERSION"
