@@ -584,7 +584,10 @@ cat << EOL
 PLEASE NOTE:
 
 After the system reboots, you can no longer log in with the root user. You will need to
-log in with the bulwark user and the password you set earlier.
+log in with the bulwark user and the password you set earlier. If you've installed this 
+on a Raspberry Pi, login with the "pi" user will still be possible.
+
+MAKE SURE EVERY USER ON YOUR SYSTEM HAS A STRONG PASSWORD!
 
 The first time you try to log in after the reboot, you will get the following error:
 
