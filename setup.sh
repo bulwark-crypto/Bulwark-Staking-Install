@@ -146,7 +146,7 @@ if [[ ("$I2P" == "y" || "$I2P" == "Y") ]]; then
   sudo tee /etc/systemd/system/kovri.service << EOL
 [Unit]
 Description=Kovri I2P
-After=network.target
+After=network-online.target
 [Service]
 Type=simple
 User=bulwark
@@ -228,7 +228,7 @@ sudo chown -R bulwark:bulwark "/home/bulwark/.bulwark"
 sudo tee -a /etc/systemd/system/bulwarkd.service &> /dev/null << EOL
 [Unit]
 Description=Bulwarks's distributed currency daemon
-After=network.target
+After=network-online.target
 [Service]
 Type=forking
 User=bulwark
