@@ -256,6 +256,41 @@ if ! sudo systemctl status bulwarkd | grep -q "active (running)"; then
   exit
 fi
 
+echo "Installing Bulwark Autoupdater..."
+rm -f /usr/local/bin/bulwarkupdate
+curl -o /usr/local/bin/bulwarkupdate https://raw.githubusercontent.com/bulwark-crypto/Bulwark-MN-Install/master/bulwarkupdate
+chmod a+x /usr/local/bin/bulwarkupdate
+
+if [ ! -f /etc/systemd/system/bulwarkupdate.service ]; then
+cat > /etc/systemd/system/bulwarkupdate.service << EOL
+[Unit]
+Description=Bulwarks's Masternode Autoupdater
+After=network-online.target
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=${USERHOME}
+ExecStart=/usr/local/bin/bulwarkupdate
+EOL
+fi
+
+if [ ! -f /etc/systemd/system/bulwarkupdate.timer ]; then
+cat > /etc/systemd/system/bulwarkupdate.timer << EOL
+[Unit]
+Description=Bulwarks's Masternode Autoupdater Timer
+
+[Timer]
+OnBootSec=1d
+OnUnitActiveSec=1d 
+
+[Install]
+WantedBy=timers.target
+EOL
+fi
+
+systemctl enable bulwarkupdate.timer
+systemctl start bulwarkupdate.timer
+
 echo "Waiting for wallet to load..."
 until sudo su -c "bulwark-cli getinfo 2>/dev/null" bulwark | jq '.version'; do
   sleep 1;
