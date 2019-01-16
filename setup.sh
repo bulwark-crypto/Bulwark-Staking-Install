@@ -225,7 +225,7 @@ fi
 sudo chmod 0600 "/home/bulwark/.bulwark/bulwark.conf"
 sudo chown -R bulwark:bulwark "/home/bulwark/.bulwark"
 
-sudo tee -a /etc/systemd/system/bulwarkd.service &> /dev/null << EOL
+sudo tee /etc/systemd/system/bulwarkd.service &> /dev/null << EOL
 [Unit]
 Description=Bulwarks's distributed currency daemon
 After=network-online.target
